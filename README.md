@@ -1,4 +1,4 @@
-# pokemon-showdown-bot
+# Pokemon Showdown Bot
 A bot shell for Pokemon Showdown created by Mashiro-chan with code from TTT.
 
 ## Setting Up Your Bot
