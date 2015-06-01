@@ -12,7 +12,7 @@ Download all of these files and put them somewhere on your computer in a folder,
 ##### Download Node.js
 To run your bot, you must first download a program called [node.js](https://nodejs.org/download/).
 Once it is downloaded, find ```Node.js command prompt``` and run it.
-Type ```npm install``` in the terminal window that opened up.
+In the terminal window that opens up, type ```npm install``` and press Enter.
 
 ##### Edit the Config File
 First off, you should copy the code in ```config-example.js``` into a new file named ```config.js```.
