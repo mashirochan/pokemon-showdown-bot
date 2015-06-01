@@ -15,7 +15,7 @@ Once it is downloaded, find ```Node.js command prompt``` and run it.
 Type ```npm install``` in the terminal window that opened up.
 
 ##### Edit the Config File
-First off, you should rename ```config-example.js``` to just ```config.js```.
+First off, you should copy the code in ```config-example.js``` into a new file named ```config.js```.
 Here are a list of things to look over:
 * ```exports.server``` should be ```'sim.smogon.com'``` if you plan on connecting to the main PS server
 * ```exports.port``` should be ```8000``` for main PS server
@@ -49,9 +49,9 @@ The ```package.json``` lists information about the bot. Some things to change ar
   * ```"name"``` the second name is your username
 
 ## Running Your Bot
-To run your bot, run ```Node.js command prompt```. Next, find the file path to your bot's folder. For example, mine is saved on my desktop so the file path is "C:\Users\Mashiro\Desktop\MashiBot\Pokemon-Showdown-Bot-master".
+To run your bot, run the program ```Node.js command prompt```. Next, find the file path to your bot's folder. For example, mine is saved on my desktop so the file path is "C:\Users\Mashiro\Desktop\MashiBot\Pokemon-Showdown-Bot-master".
 In the terminal window type ```cd [your file path]```, and then press Enter.
-Next, type ```node main.js``` to start your bot. You should see things start to pop up, confirming connection to the server and also the joining of the rooms that it was assigned to join.
+Next, type ```node main.js``` and press Enter again to start your bot. You should see things start to pop up, confirming connection to the server and also the joining of the rooms that it was assigned to join.
 
 ## Making Commands
 
@@ -102,7 +102,26 @@ There are several functions that make your life as a programmer much, much easie
 
 ##### toId
 ```toId``` is a function that takes in a ```string``` parameter and puts it in all lowercase, as well as removes all spaces and anything that isn't a number or letter.
-```JavaScript
+```javascript
 toId(arg)
 ```
-```arg``` is the string that you want to pass into the ```toId``` function.
+  * ```arg``` is the string that you want to pass into the ```toId``` function.
+  * **Input**: String
+  * **Output**: String with no symbols, spaces, and all lowercase
+
+###### Example
+```javascript
+var a = toId('+Mashiro-chan');
+console.log(a);
+mashirochan
+```
+
+##### indexOf
+```javascript
+[string].indexOf('[search term]', [index])
+```
+  * ```string``` is the string variable that you want to search through
+  * ```search term``` is a string that you want to search for in the string variable
+  * ```index``` is the index in the string variable that you want to start searching at
+  * **Input**: String, Search term
+  * **Output**: Index of where the Search term first occurs in the String
