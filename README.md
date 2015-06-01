@@ -125,3 +125,35 @@ mashirochan
   * ```index``` is the index in the string variable that you want to start searching at
   * **Input**: String, Search term
   * **Output**: Index of where the Search term first occurs in the String
+  * *Note: If the search term is not in the string variable, then the function will return -1*
+
+###### Example
+```javascript
+var a = 'Hello, my name is bob.';
+console.log(a.indexOf('o'));
+4
+console.log(a.indexOf('o', 6));
+19
+```
+
+##### split
+```javascript
+[string].split('split term');
+```
+  * ```string``` is the string variable that you want to search through
+  * ```split term``` is a string that you want to split the string variable by
+  * **Input**: String, Split term
+  * **Output**: An array, each term being the parts of the string in between the Split term
+  * *Note: If the split term is not in the string variable, then the function will return an error*
+
+###### Example
+```javascript
+var a = 'Ninetales, Squirtle, Pichu';
+a.split(', ');
+console.log(a[0]);
+Ninetales
+console.log(a[1]);
+Squirtle
+console.log(a[2]);
+Pichu
+```
