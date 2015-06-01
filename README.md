@@ -1,12 +1,20 @@
 # pokemon-showdown-bot
-A bot shell for Pokemon Showdown
+A bot shell for Pokemon Showdown created by Mashiro-chan with code from TTT.
 
 ## Setting Up Your Bot
 
 ##### Create An Account
 Create an account for your bot on PS, pick a username, and register it with a password of your choice.
 
-##### Edit the Config
+##### Download Files
+Download all of these files and put them somewhere on your computer in a folder, preferrable named after your bot.
+
+##### Download Node.js
+To run your bot, you must first download a program called [node.js](https://nodejs.org/download/).
+Once it is downloaded, find ```Node.js command prompt``` and run it.
+Type ```npm install``` in the terminal window that opened up.
+
+##### Edit the Config File
 First off, you should rename ```config-example.js``` to just ```config.js```.
 Here are a list of things to look over:
 * ```exports.server``` should be ```'sim.smogon.com'``` if you plan on connecting to the main PS server
@@ -33,6 +41,17 @@ Here are a list of things to look over:
   * Example: ```'https://github.com/mashirochan/MashiBot'```
 * ```exports.avatarNumber``` is the number of the avatar that you want your bot to have
   * Example: ```'155'```
+
+##### Editing the Package File
+The ```package.json``` lists information about the bot. Some things to change are:
+  * ```"name"``` is the name of your bot
+  * ```"url"``` is the link to your bot's GitHub repository
+  * ```"name"``` the second name is your username
+
+## Running Your Bot
+To run your bot, run ```Node.js command prompt```. Next, find the file path to your bot's folder. For example, mine is saved on my desktop so the file path is "C:\Users\Mashiro\Desktop\MashiBot\Pokemon-Showdown-Bot-master".
+In the terminal window type ```cd [your file path]```, and then press Enter.
+Next, type ```node main.js``` to start your bot. You should see things start to pop up, confirming connection to the server and also the joining of the rooms that it was assigned to join.
 
 ## Making Commands
 
@@ -77,7 +96,3 @@ say: function(arg, by, room, con) {
 },
 ```
 Let's say it's a nice, warm summer day and a user is sitting in their basement on PS, chatting in the Tech & Code room, under the username MashiIsCool3327. Their rank is ~, and the ```say``` command was used to set ```say``` to #. If they were to type "#say Hello" in the chat, the function would first call the ```canUse``` function. ```by```, aka the user, has a rank of ~, which is higher than #, in the ```room```, aka 'techcode', so the function returns ```true```. Since ```!true``` is ```false```, the function does not return ```false``` and continues. Remember how I told you how to output stuff up above? Well the function uses ```this.say``` to output the ```arg```, aka 'Hello', in the ```room```, aka 'techcode'. *Spooky!*
-
-## Running Your Bot
-
-To run your bot, you must first install a program called [node.js](https://nodejs.org/download/)
