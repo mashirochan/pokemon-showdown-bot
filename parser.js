@@ -45,7 +45,6 @@ exports.parse = {
 		var spl = message.split('\n');
 		
 			if (spl[2]) {
-			//if (spl[2].substr(1, 5) === 'popup') this.say(connection, 'tha', '__authlist detected!__');
 			if (spl[2].substr(1, 10) === 'tournament') {
 				var splTour = spl[2].split('|');
 			}
