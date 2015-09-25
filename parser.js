@@ -16,10 +16,31 @@ try {
 	if (!Object.keys(settings).length && settings !== {}) settings = {};
 } catch (e) {} // file doesn't exist [yet]
 
+userlog = {};
+try {
+	userlog = JSON.parse(fs.readFileSync('userlog.json'));
+	if (!Object.keys(userlog).length && userlog !== {}) userlog = {};
+} catch (e) {} // file doesn't exist [yet]
+
+bannedWords = {};
+try {
+	bannedWords = JSON.parse(fs.readFileSync('bannedWords.json'));
+	if (!Object.keys(bannedWords).length && bannedWords !== {}) bannedWords = {};
+} catch (e) {} // file doesn't exist [yet]
+
+bannedSites = {};
+try {
+	bannedSites = JSON.parse(fs.readFileSync('bannedSites.json'));
+	if (!Object.keys(bannedSites).length && bannedSites !== {}) bannedSites = {};
+} catch (e) {} // file doesn't exist [yet]
+
 exports.parse = {
 	actionUrl: url.parse('https://play.pokemonshowdown.com/~~' + config.serverid + '/action.php'),
 	room: 'lobby',
 	'settings': settings,
+	'userlog': userlog,
+	'bannedWords': bannedWords,
+	'bannedSites': bannedSites,
 	chatData: {},
 	ranks: {},
 	msgQueue: [],
@@ -157,13 +178,13 @@ exports.parse = {
 
 				this.msgQueue.push('|/blockchallenges');
 				for (var i = 0, len = config.rooms.length; i < len; i++) {
-					var room = toId(config.rooms[i]);
+					var room = config.rooms[i];
 					if (room === 'lobby' && config.serverid === 'showdown') continue;
 					this.msgQueue.push('|/join ' + room);
 					this.msgQueue.push('|/avatar ' + config.avatarNumber);
 				}
 				for (var i = 0, len = config.privaterooms.length; i < len; i++) {
-					var room = toId(config.privaterooms[i]);
+					var room = config.privaterooms[i];
 					if (room === 'lobby' && config.serverid === 'showdown') continue;
 					this.msgQueue.push('|/join ' + room);
 					this.msgQueue.push('|/avatar ' + config.avatarNumber);
@@ -330,67 +351,116 @@ exports.parse = {
 /// Moderation ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////      
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////        		
 		
-		if (/8=+D/i.test(msg)) this.say(connection, room, '/m ' + toId(by) + ', l-lewd..!! ;///;');
-		if (config.allowmute && this.hasRank(this.ranks[room] || ' ', '%@&#~') && config.whitelist.indexOf(user) === -1) {
-			var useDefault = !(this.settings['modding'] && this.settings['modding'][room]);
-			var pointVal = 0;
-			var warnMessage = '';
-			// moderation for banned words
-			if (useDefault || this.settings['modding'][room]['bannedwords'] !== 0 && pointVal < 2) {
-				var bannedPhrases = !!this.settings.bannedphrases ? (Object.keys(this.settings.bannedphrases[room] || {})).concat(Object.keys(this.settings.bannedphrases['global'] || {})) : [];
-				for (var i = 0; i < bannedPhrases.length; i++) {
-					if (msg.toLowerCase().indexOf(bannedPhrases[i]) > -1) {
-						pointVal = 2;
-						this.say(connection, room, '/mute ' + user + ', please don\'t say that! ;w;');
-						break;
-					}
-				}
+		if (!this.userlog) this.userlog = {};
+		if (!this.userlog[user]) this.userlog[user] = {};
+		var offense = false;
+		var rule = '';
+		var rule2 = '';
+		
+		// Banned Phrases Moderation
+		for (var i in this.bannedWords["words"]) {
+			var word = "\\b(" + this.bannedWords["words"][i] + ")\\b";
+			var reg = new RegExp(word, "g");
+			if (reg.test(msg) && config.whitelist.indexOf(user) === -1) {
+			offense = true;
+			rule = 'say that';
+			rule2 = 'Banned Phrase';
 			}
-			// moderation for flooding (more than x lines in y seconds)
-/*			var isFlooding = (this.chatData[user][room].times.length >= FLOOD_MESSAGE_NUM && (now - this.chatData[user][room].times[this.chatData[user][room].times.length - FLOOD_MESSAGE_NUM]) < FLOOD_MESSAGE_TIME
-				&& (now - this.chatData[user][room].times[this.chatData[user][room].times.length - FLOOD_MESSAGE_NUM]) > (FLOOD_PER_MSG_MIN * FLOOD_MESSAGE_NUM));
-			if ((useDefault || this.settings['modding'][room]['flooding'] !== 0) && isFlooding) {
-				if (user === config.nick) {
-					return;
-				} else {
-					this.say(connection, room, '__' + user + ', please don\'t flood the chat ;~;__');
-				}
-			} */
-			// moderation for caps (over x% of the letters in a line of y characters are capital)
-//			var capsMatch = msg.replace(/[^A-Za-z]/g, '').match(/[A-Z]/g);
-//			if ((useDefault || this.settings['modding'][room]['caps'] !== 0) && capsMatch && toId(msg).length > MIN_CAPS_LENGTH && (capsMatch.length >= Math.floor(toId(msg).length * MIN_CAPS_PROPORTION))) {
-//				this.say(connection, room, '__' + user + ', p-please stop yelling..!! >~<__');
-//			}
-//			// moderation for stretching (over x consecutive characters in the message are the same)
-//			var stretchMatch = msg.toLowerCase().match(/(.)\1{7,}/g) || msg.toLowerCase().match(/(..+)\1{4,}/g); // matches the same character (or group of characters) 8 (or 5) or more times in a row
-//			if ((useDefault || this.settings['modding'][room]['stretching'] !== 0) && stretchMatch) {
-//				this.say(connection, room, '__' + by + ', this isn\'t yoga, no stretching please ._.__');
-//			}
-
-		/*	if (pointVal > 0 && !(now - this.chatData[user][room].lastAction < ACTION_COOLDOWN)) {
-				var cmd = '__';
-				// defaults to the next punishment in config.punishVals instead of repeating the same action (so a second warn-worthy
-				// offence would result in a mute instead of a warn, and the third an hourmute, etc)
-				if (this.chatData[user][room].points >= pointVal && pointVal < 4) {
-					this.chatData[user][room].points++;
-					cmd = config.punishvals[this.chatData[user][room].points] || cmd;
-				} else { // if the action hasn't been done before (is worth more points) it will be the one picked
-					cmd = config.punishvals[pointVal] || cmd;
-					this.chatData[user][room].points = pointVal; // next action will be one level higher than this one (in most cases)
-				}
-				if (config.privaterooms.indexOf(room) >= 0 && cmd === 'warn') cmd = '__'; // can't warn in private rooms
-				// if the bot has % and not @, it will default to hourmuting as its highest level of punishment instead of roombanning
-				if (this.chatData[user][room].points >= 4 && !this.hasRank(this.ranks[room] || ' ', '@&#~')) cmd = 'hourmute';
-				if (this.chatData[user].zeroTol > 4) { // if zero tolerance users break a rule they get an instant roomban or hourmute
-					warnMessage = ', Automated response: zero tolerance user';
-					cmd = this.hasRank(this.ranks[room] || ' ', '@&#~') ? 'roomban' : 'hourmute';
-				}
-				if (this.chatData[user][room].points >= 2) this.chatData[user].zeroTol++; // getting muted or higher increases your zero tolerance level (warns do not)
-				this.chatData[user][room].lastAction = now;
-				this.say(connection, room, cmd + user + warnMessage);
+		}
+		
+		// Caps Moderation
+		var capsMatch = msg.replace(/[^A-Za-z]/g, '').match(/[A-Z]/g);
+		if (capsMatch && toId(msg).length > MIN_CAPS_LENGTH && (capsMatch.length >= Math.floor(toId(msg).length * MIN_CAPS_PROPORTION)) && config.whitelist.indexOf(user) === -1) {
+			offense = true;
+			rule = 'use so much caps';
+			rule2 = 'Caps';
+		}
+		
+		// Stretching Moderation
+		var stretchMatch = msg.toLowerCase().match(/(.)\1{7,}/g) || msg.toLowerCase().match(/(..+)\1{4,}/g);
+		if (stretchMatch && config.whitelist.indexOf(user) === -1) {
+			offense = true;
+			rule = 'stretch';
+			rule2 = 'Stretching';
+		}
+		
+		// Flooding Moderation
+		var d = new Date();
+		if (!this.userlog[user]["firstMessage"]) {
+			this.userlog[user]["firstMessage"] = d.getTime();
+			this.userlog[user]["messageCount"] = 1;
+		}
+		if (d.getTime() - this.userlog[user]["firstMessage"]  < (6 * 1000)) {
+			this.userlog[user]["messageCount"]++;
+			if (this.userlog[user]["messageCount"] >= 6) {
+				offense = true;
+				rule = 'flood the chat';
+				rule2 = 'Flooding';
+				if (!this.userlog[user]["points"]) this.userlog[user]["points"] = 0;
+				this.userlog[user]["points"]++;
 			}
-		*/}
-	},	
+		} else {
+			delete this.userlog[user]["firstMessage"];
+			delete this.userlog[user]["messageCount"];
+		}
+		
+		// Bot Commands Moderation
+		var d = new Date();
+		if (msg.charAt(0) == '#') {
+			if (!this.userlog[user]["firstCommand"]) {
+				this.userlog[user]["firstCommand"] = d.getTime();
+				this.userlog[user]["commandCount"] = 1;
+			}
+			if (d.getTime() - this.userlog[user]["firstCommand"]  < (180000)) {
+				this.userlog[user]["commandCount"]++;
+				if (this.userlog[user]["commandCount"] >= 6) {
+					offense = true;
+					rule = 'use so many commands';
+					rule2 = 'Spamming Commands';
+					if (!this.userlog[user]["points"]) this.userlog[user]["points"] = 0;
+					delete this.userlog[user]["firstCommand"];
+					delete this.userlog[user]["commandCount"];
+					this.userlog[user]["points"]++;
+				}
+			} else {
+				delete this.userlog[user]["firstCommand"];
+				delete this.userlog[user]["commandCount"];
+			}
+		}
+		
+		// Points / Cooldown
+		if (offense == true) {
+			if (!this.userlog) this.userlog = {};
+				if (!this.userlog[user]) this.userlog[user] = {};
+				if (!this.userlog[user]["points"]) this.userlog[user]["points"] = 0;
+				d = new Date();
+				if (this.userlog[user]["lastOffense"] && (d.getTime() - this.userlog[user]["lastOffense"] > (2 * 86400000))) { // After two days, a user will start to lose points
+					this.userlog[user]["points"] -= Math.floor(((d.getTime() - this.userlog[user]["lastOffense"]) / (2 * 86400000))); // Users lose one point every two days
+					if (this.userlog[user]["points"] < 0) this.userlog[user]["points"] = 0;
+				}
+				this.userlog[user]["points"]++;
+				this.userlog[user]["lastOffense"] = d.getTime();
+				if (this.userlog[user]["points"] == 1 || this.userlog[user]["points"] == 2) {
+					this.say(connection, room, '/k ' + user + ', Please do not ' + rule + '!');
+					if (!this.userlog[user]["warns"]) this.userlog[user]["warns"] = 1;
+					else this.userlog[user]["warns"]++;
+				} else if (this.userlog[user]["points"] == 3) {
+					this.say(connection, room, '/m ' + user + ', You\'ve been warned twice already.. ;~; (' + rule2 + ')');
+					if (!this.userlog[user]["mutes"]) this.userlog[user]["mutes"] = 1;
+					else this.userlog[user]["mutes"]++;
+				} else if (this.userlog[user]["points"] == 4) {
+					this.say(connection, room, '/hm ' + user + ', How any times do I have to tell you ;-; (' + rule2 + ')');
+					if (!this.userlog[user]["mutes"]) this.userlog[user]["mutes"] = 1;
+					else this.userlog[user]["mutes"]++;
+				} else if (this.userlog[user]["points"] == 5) {
+					this.say(connection, room, '/rb ' + user + ', rip ;-; (' + rule2 + ')');
+					if (!this.userlog[user]["bans"]) this.userlog[user]["bans"] = 1;
+					else this.userlog[user]["bans"]++;
+					this.userlog[user]["points"] = 0;
+				}
+				this.writeUserlog();
+		}
+	},
 	cleanChatData: function() {
 		
 		var chatData = this.chatData;
@@ -496,6 +566,98 @@ exports.parse = {
 					if (err) {
 						// This should only happen on Windows.
 						fs.writeFile('settings.json', data, finishWriting);
+						return;
+					}
+					finishWriting();
+				});
+			});
+		};
+	})(),
+	writeUserlog: (function() {
+		var writing = false;
+		var writePending = false; // whether or not a new write is pending
+		var finishWriting = function() {
+			writing = false;
+			if (writePending) {
+				writePending = false;
+				this.writeUserlog();
+			}
+		};
+		return function() {
+			if (writing) {
+				writePending = true;
+				return;
+			}
+			writing = true;
+			var data = JSON.stringify(this.userlog);
+			fs.writeFile('userlog.json.0', data, function() {
+				// rename is atomic on POSIX, but will throw an error on Windows
+				fs.rename('userlog.json.0', 'userlog.json', function(err) {
+					if (err) {
+						// This should only happen on Windows.
+						fs.writeFile('userlog.json', data, finishWriting);
+						return;
+					}
+					finishWriting();
+				});
+			});
+		};
+	})(),
+	writeBannedSites: (function() {
+		var writing = false;
+		var writePending = false; // whether or not a new write is pending
+		var finishWriting = function() {
+			writing = false;
+			if (writePending) {
+				writePending = false;
+				this.writeBannedSites();
+			}
+		};
+		return function() {
+			if (writing) {
+				writePending = true;
+				return;
+
+			}
+			writing = true;
+			var data = JSON.stringify(this.bannedSites);
+			fs.writeFile('bannedSites.json.0', data, function() {
+				// rename is atomic on POSIX, but will throw an error on Windows
+				fs.rename('bannedSites.json.0', 'bannedSites.json', function(err) {
+					if (err) {
+						// This should only happen on Windows.
+						fs.writeFile('bannedSites.json', data, finishWriting);
+						return;
+					}
+					finishWriting();
+				});
+			});
+		};
+	})(),
+	writeBannedWords: (function() {
+		var writing = false;
+		var writePending = false; // whether or not a new write is pending
+		var finishWriting = function() {
+			writing = false;
+			if (writePending) {
+				writePending = false;
+				this.writeBannedWords();
+			}
+		};
+		return function() {
+			if (writing) {
+				writePending = true;
+				return;
+
+			}
+			writing = true;
+			var data = JSON.stringify(this.bannedWords);
+			fs.writeFile('bannedWords.json.0', data, function() {
+				// rename is atomic on POSIX, but will throw an error on Windows
+				fs.rename('bannedWords.json.0', 'bannedWords.json', function(err) {
+					if (err) {
+						// This should only happen on Windows.
+						fs.writeFile('bannedWords.json', data, finishWriting);
 						return;
 					}
 					finishWriting();
