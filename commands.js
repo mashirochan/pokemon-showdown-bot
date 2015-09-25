@@ -46,7 +46,7 @@ exports.commands = {
 		if (!this.hasRank(by, '~')) return false;
 		if (arg.indexOf(", ") == -1) return this.say(con, room, (room.charAt(0) === ',' ? '' : '/pm ' + toId(by) + ', ') + '__No room has been specified!__');
 		var input = arg.split(", ");
-		var tarRoom = toId(input[0]);
+		var tarRoom = input[0];
 		var message = input[1];
 		this.say(con, tarRoom, message);
 	},
