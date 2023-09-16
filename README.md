@@ -91,13 +91,13 @@ There is a command called ```set``` which sets the required ranks for commands. 
 
 ```javascript
 say: function(arg, by, room, con) {
-		if (!this.canUse('say', room, by)) return false;
-		this.say(con, room, arg);
+	if (!this.canUse('say', room, by)) return false;
+	this.say(con, room, arg);
 },
 ```
 Let's say it's a nice, warm summer day and a user is sitting in their basement on PS, chatting in the Tech & Code room, under the username MashiIsCool3327. Their rank is ~, and the ```set``` command was used to set ```say``` to #. If they were to type "#say Hello" in the chat, the function would first call the ```canUse``` function. ```by```, aka the user, has a rank of ~, which is higher than #, in the ```room```, aka 'techcode', so the function returns ```true```. Since ```!true``` is ```false```, the function does not return ```false``` and continues. Remember how I told you how to output stuff up above? Well the function uses ```this.say``` to output the ```arg```, aka 'Hello', in the ```room```, aka 'techcode'. *Spooky!*
 
-##Useful Functions
+## Useful Functions
 There are several functions that make your life as a programmer much, much easier. Some are defined in the bot's code, but most of them are pre-defined functions that are commonly used in JavaScript.
 
 ##### toId
